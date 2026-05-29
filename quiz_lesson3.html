@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Квиз — Занятие 3 | IT Project Management</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --bg-secondary: #f5f5f4;
+    --bg-info: #e6f1fb;
+    --bg-success: #eaf3de;
+    --bg-danger: #fcebeb;
+    --text: #1a1a1a;
+    --text-secondary: #6b7280;
+    --text-info: #185fa5;
+    --text-success: #3b6d11;
+    --text-danger: #a32d2d;
+    --border: rgba(0,0,0,0.12);
+    --border-secondary: rgba(0,0,0,0.22);
+    --border-info: #85b7eb;
+    --border-success: #97c459;
+    --border-danger: #f09595;
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1e;
+      --bg-secondary: #2c2c2e;
+      --bg-info: #0c447c;
+      --bg-success: #27500a;
+      --bg-danger: #791f1f;
+      --text: #f2f2f7;
+      --text-secondary: #aeaeb2;
+      --text-info: #b5d4f4;
+      --text-success: #c0dd97;
+      --text-danger: #f7c1c1;
+      --border: rgba(255,255,255,0.12);
+      --border-secondary: rgba(255,255,255,0.22);
+      --border-info: #378add;
+      --border-success: #639922;
+      --border-danger: #e24b4a;
+    }
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg-secondary);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+
+  .card {
+    background: var(--bg);
+    border-radius: var(--radius-lg);
+    border: 0.5px solid var(--border);
+    padding: 2rem;
+    width: 100%;
+    max-width: 600px;
+  }
+
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  .hero { text-align: center; padding: 1rem 0 2rem; }
+  .hero-icon { font-size: 52px; color: var(--text-info); margin-bottom: 1rem; }
+  .hero h1 { font-size: 22px; font-weight: 500; color: var(--text); margin-bottom: .5rem; }
+  .hero .course { font-size: 12px; font-weight: 500; letter-spacing: .08em; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 1.5rem; }
+  .hero p { font-size: 15px; color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.7; }
+
+  .meta-row { display: flex; justify-content: center; gap: 1.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
+  .meta-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary); }
+  .meta-item i { font-size: 16px; }
+
+  .start-btn {
+    background: var(--bg-info);
+    color: var(--text-info);
+    border: none;
+    border-radius: var(--radius-lg);
+    padding: .85rem 2.5rem;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity .15s;
+  }
+  .start-btn:hover { opacity: .85; }
+
+  .q-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+  .q-counter { font-size: 13px; color: var(--text-secondary); }
+  .timer-wrap { display: flex; align-items: center; gap: 6px; background: var(--bg-secondary); border-radius: var(--radius); padding: .35rem .75rem; }
+  .timer-val { font-size: 14px; font-weight: 500; color: var(--text); min-width: 20px; text-align: center; }
+  .timer-val.urgent { color: var(--text-danger); }
+
+  .progress-bar { height: 4px; background: var(--border); border-radius: 2px; margin-bottom: 1.75rem; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--border-info); border-radius: 2px; transition: width .4s ease; }
+
+  .q-text { font-size: 17px; font-weight: 500; color: var(--text); line-height: 1.5; margin-bottom: 1.5rem; }
+
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt {
+    display: flex; align-items: center; gap: 12px;
+    padding: .85rem 1rem;
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    background: var(--bg);
+    transition: border-color .15s, background .15s;
+  }
+  .opt:hover:not(.disabled) { border-color: var(--border-info); background: var(--bg-info); }
+  .opt-letter {
+    width: 30px; height: 30px; border-radius: 50%;
+    border: 0.5px solid var(--border-secondary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 500; color: var(--text-secondary); flex-shrink: 0;
+  }
+  .opt-text { font-size: 14px; color: var(--text); line-height: 1.4; }
+  .opt.correct { border-color: var(--border-success); background: var(--bg-success); }
+  .opt.correct .opt-letter { border-color: var(--border-success); color: var(--text-success); }
+  .opt.wrong { border-color: var(--border-danger); background: var(--bg-danger); }
+  .opt.wrong .opt-letter { border-color: var(--border-danger); color: var(--text-danger); }
+  .opt.disabled { cursor: default; }
+
+  .explanation {
+    margin-top: 1rem; padding: .85rem 1rem;
+    background: var(--bg-secondary); border-radius: var(--radius);
+    font-size: 13px; color: var(--text-secondary); line-height: 1.6;
+    display: none;
+  }
+  .explanation.show { display: block; }
+  .explanation strong { color: var(--text); font-weight: 500; }
+
+  .next-btn {
+    margin-top: 1.25rem; width: 100%; padding: .75rem;
+    border: 0.5px solid var(--border-secondary);
+    border-radius: var(--radius-lg);
+    background: var(--bg); color: var(--text);
+    font-size: 14px; cursor: pointer; display: none;
+    transition: background .15s;
+  }
+  .next-btn:hover { background: var(--bg-secondary); }
+  .next-btn.show { display: block; }
+
+  .results-wrap { text-align: center; padding: 1rem 0 1rem; }
+  .score-circle {
+    width: 120px; height: 120px; border-radius: 50%;
+    border: 3px solid var(--border-info);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    margin: 0 auto 1.5rem;
+  }
+  .score-num { font-size: 32px; font-weight: 500; color: var(--text-info); }
+  .score-label { font-size: 12px; color: var(--text-secondary); }
+  .result-title { font-size: 20px; font-weight: 500; color: var(--text); margin-bottom: .5rem; }
+  .result-sub { font-size: 14px; color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.6; }
+
+  .answers-review { text-align: left; margin-bottom: 2rem; }
+  .rev-item { display: flex; align-items: flex-start; gap: 10px; padding: .75rem 0; border-bottom: 0.5px solid var(--border); }
+  .rev-icon { font-size: 17px; flex-shrink: 0; margin-top: 1px; }
+  .rev-icon.ok { color: var(--text-success); }
+  .rev-icon.no { color: var(--text-danger); }
+  .rev-q { font-size: 13px; color: var(--text-secondary); margin-bottom: 3px; line-height: 1.4; }
+  .rev-a { font-size: 13px; color: var(--text); font-weight: 500; }
+
+  .btn-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .retry-btn {
+    border: 0.5px solid var(--border-secondary); border-radius: var(--radius-lg);
+    padding: .75rem 1.5rem; font-size: 14px; cursor: pointer;
+    background: var(--bg); color: var(--text); transition: background .15s;
+  }
+  .retry-btn:hover { background: var(--bg-secondary); }
+  .share-btn {
+    border: none; border-radius: var(--radius-lg);
+    padding: .75rem 1.5rem; font-size: 14px; cursor: pointer;
+    background: var(--bg-info); color: var(--text-info); transition: opacity .15s;
+  }
+  .share-btn:hover { opacity: .85; }
+
+  .footer {
+    text-align: center; margin-top: 1.5rem;
+    font-size: 12px; color: var(--text-secondary);
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="screen active" id="screen-start">
+    <div class="hero">
+      <div class="hero-icon"><i class="ti ti-refresh-dot"></i></div>
+      <div class="course">IT Project Management · Занятие 3</div>
+      <h1>Scrum: Команда, Артефакты и Церемонии</h1>
+      <p>Проверь, насколько хорошо ты усвоил роли в Scrum-команде, три ключевых артефакта и пять церемоний спринта.</p>
+      <div class="meta-row">
+        <div class="meta-item"><i class="ti ti-help-circle"></i> 10 вопросов</div>
+        <div class="meta-item"><i class="ti ti-clock"></i> ~5 минут</div>
+        <div class="meta-item"><i class="ti ti-trophy"></i> Рейтинг по итогу</div>
+      </div>
+      <button class="start-btn" onclick="startQuiz()"><i class="ti ti-player-play"></i> Начать квиз</button>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-question">
+    <div class="q-header">
+      <span class="q-counter" id="q-counter">Вопрос 1 из 10</span>
+      <div class="timer-wrap">
+        <i class="ti ti-clock" style="font-size:15px;color:var(--text-secondary)"></i>
+        <span class="timer-val" id="timer-val">20</span>
+      </div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="q-text" id="q-text"></div>
+    <div class="options" id="options"></div>
+    <div class="explanation" id="explanation"></div>
+    <button class="next-btn" id="next-btn" onclick="nextQuestion()"></button>
+  </div>
+
+  <div class="screen" id="screen-results">
+    <div class="results-wrap">
+      <div class="score-circle" id="score-circle">
+        <span class="score-num" id="score-num">0/10</span>
+        <span class="score-label">результат</span>
+      </div>
+      <div class="result-title" id="result-title"></div>
+      <div class="result-sub" id="result-sub"></div>
+      <div class="answers-review" id="answers-review"></div>
+      <div class="btn-row">
+        <button class="retry-btn" onclick="restartQuiz()"><i class="ti ti-refresh"></i> Пройти снова</button>
+        <button class="share-btn" onclick="shareResult()"><i class="ti ti-copy"></i> Скопировать результат</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">IT Project Management · Занятие 3 · Scrum</div>
+
+<script>
+const questions = [
+  {
+    q: "Тимур — опытный разработчик, которого назначили Scrum Master-ом. Он начал ставить задачи команде и контролировать их выполнение. Что он делает неправильно?",
+    opts: [
+      "Ничего, Scrum Master должен управлять командой",
+      "Scrum Master не назначает задачи — команда самоорганизуется сама",
+      "Scrum Master должен только проводить митинги, но не контролировать",
+      "Он должен согласовывать задачи с Product Owner-ом"
+    ],
+    correct: 1,
+    explanation: "<strong>Верно!</strong> Scrum Master — Servant Leader, он служит команде, а не управляет ею. Команда разработчиков сама решает, кто и что делает. Тимур перепутал роль Scrum Master с Project Manager."
+  },
+  {
+    q: "В чём ключевое отличие Scrum Master от Project Manager?",
+    opts: [
+      "Scrum Master получает больше зарплаты",
+      "Project Manager не работает в IT",
+      "Scrum Master — Servant Leader без формальной власти; PM — руководит и контролирует",
+      "Scrum Master отвечает за бюджет, а PM — за процесс"
+    ],
+    correct: 2,
+    explanation: "<strong>Верно!</strong> Scrum Master служит команде: устраняет препятствия и обучает Agile. У него нет формальных полномочий. Project Manager управляет: распределяет задачи, следит за сроками и бюджетом."
+  },
+  {
+    q: "Product Owner Санобар получила новые требования от клиента прямо в середине спринта. Что она должна сделать?",
+    opts: [
+      "Немедленно добавить задачи в Sprint Backlog текущего спринта",
+      "Добавить требования в Product Backlog — в спринт попадут на следующем планировании",
+      "Остановить спринт и начать новый",
+      "Передать требования напрямую разработчикам"
+    ],
+    correct: 1,
+    explanation: "<strong>Верно!</strong> Product Owner управляет Product Backlog — именно туда попадают новые требования. Sprint Backlog фиксирован на время спринта. Новые задачи войдут в следующий спринт через планирование."
+  },
+  {
+    q: "Команда завершила спринт. Три задачи написаны, но не прошли тестирование и не задеплоены. Входят ли они в инкремент?",
+    opts: [
+      "Да, главное что код написан",
+      "Да, если Product Owner их одобрил",
+      "Нет — они не соответствуют Definition of Done",
+      "Да, но с пометкой «в процессе»"
+    ],
+    correct: 2,
+    explanation: "<strong>Верно!</strong> Инкремент включает только работу, соответствующую Definition of Done. Незаконченное тестирование и отсутствие деплоя нарушают DoD — такие задачи не считаются завершёнными и в инкремент не входят."
+  },
+  {
+    q: "Чем отличается Product Backlog от Sprint Backlog?",
+    opts: [
+      "Product Backlog — для разработчиков, Sprint Backlog — для менеджеров",
+      "Product Backlog — полный список всех идей без срока; Sprint Backlog — выбранные задачи для конкретного спринта",
+      "Это одно и то же, просто разные названия",
+      "Product Backlog создаётся один раз, Sprint Backlog — каждый день"
+    ],
+    correct: 1,
+    explanation: "<strong>Верно!</strong> Product Backlog — живой, постоянно обновляемый список всего желаемого в продукте (за него отвечает PO). Sprint Backlog — подмножество, выбранное командой на планировании для текущего спринта."
+  },
+  {
+    q: "Каждое утро команда собирается на 15 минут. Каждый отвечает: что сделал вчера, что планирует сегодня, есть ли препятствия. Как называется эта церемония?",
+    opts: [
+      "Sprint Review",
+      "Sprint Planning",
+      "Daily Scrum (Дэйли)",
+      "Ретроспектива"
+    ],
+    correct: 2,
+    explanation: "<strong>Верно!</strong> Daily Scrum — ежедневная 15-минутная синхронизация команды. Это инструмент самоорганизации, а не статус-митинг для руководства. Три вопроса помогают координироваться и выявлять блокеры."
+  },
+  {
+    q: "Команда провела Sprint Review: показала работающий продукт стейкхолдерам, собрала обратную связь. Что происходит с Product Backlog после этой встречи?",
+    opts: [
+      "Он полностью удаляется и создаётся заново",
+      "Он остаётся неизменным до конца проекта",
+      "Он актуализируется с учётом полученного фидбека",
+      "Его обновляет только Scrum Master"
+    ],
+    correct: 2,
+    explanation: "<strong>Верно!</strong> Sprint Review — это не просто приёмка, а совместная работа над продуктом. По итогу фидбека Product Owner обновляет и переприоритизирует Product Backlog перед следующим спринтом."
+  },
+  {
+    q: "На ретроспективе команда обсуждает: что работало хорошо, что нужно улучшить, и конкретные шаги. Кто участвует в этой встрече?",
+    opts: [
+      "Только Scrum Master и Product Owner",
+      "Только разработчики без Scrum Master",
+      "Вся Scrum-команда: SM, PO и разработчики",
+      "Вся команда плюс стейкхолдеры и клиенты"
+    ],
+    correct: 2,
+    explanation: "<strong>Верно!</strong> Ретроспектива — внутренняя встреча только Scrum-команды: SM, PO и разработчики. Стейкхолдеры не приглашаются — команда должна говорить открыто о процессах без внешнего давления."
+  },
+  {
+    q: "Интернет-магазин разрабатывается по Scrum. После Спринта 1 — рабочий каталог товаров. После Спринта 2 добавилась корзина. Что представляет собой инкремент после Спринта 2?",
+    opts: [
+      "Только корзина — то, что добавили в этом спринте",
+      "Каталог + корзина — всё готовое и рабочее на текущий момент",
+      "Ещё не готовый продукт, так как не хватает личного кабинета",
+      "Обновлённый бэклог продукта после спринта"
+    ],
+    correct: 1,
+    explanation: "<strong>Верно!</strong> Инкремент — это сумма ВСЕЙ завершённой работы: и предыдущих спринтов, и текущего. После Спринта 2 инкремент = каталог + корзина. Продукт рабочий и готов к поставке прямо сейчас."
+  },
+  {
+    q: "Компания в Таджикистане хочет внедрить Scrum. С какой главной трудностью она, скорее всего, столкнётся?",
+    opts: [
+      "Scrum запрещён в странах СНГ",
+      "Нехватка обученных специалистов и низкая Scrum-культура на рынке",
+      "Scrum подходит только для американских компаний",
+      "Scrum слишком дорого стоит для внедрения"
+    ],
+    correct: 1,
+    explanation: "<strong>Верно!</strong> Главные вызовы для Таджикистана: мало специалистов со знанием Agile, компании не знают как применять Scrum на практике, низкая культура итеративной разработки. Но это и огромный потенциал — кто придёт первым, тот задаст стандарты рынка."
+  }
+];
+
+let current=0, score=0, answers=[], timer=null, timeLeft=20, answered=false;
+
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+
+function startQuiz(){current=0;score=0;answers=[];show('screen-question');renderQuestion();}
+
+function renderQuestion(){
+  answered=false;
+  const q=questions[current];
+  document.getElementById('q-counter').textContent=`Вопрос ${current+1} из ${questions.length}`;
+  document.getElementById('progress-fill').style.width=`${(current/questions.length)*100}%`;
+  document.getElementById('q-text').textContent=q.q;
+  document.getElementById('explanation').className='explanation';
+  document.getElementById('next-btn').className='next-btn';
+  const letters=['А','Б','В','Г'];
+  const opts=document.getElementById('options');
+  opts.innerHTML='';
+  q.opts.forEach((o,i)=>{
+    const d=document.createElement('div');
+    d.className='opt';
+    d.innerHTML=`<div class="opt-letter">${letters[i]}</div><div class="opt-text">${o}</div>`;
+    d.onclick=()=>selectAnswer(i);
+    opts.appendChild(d);
+  });
+  startTimer();
+}
+
+function startTimer(){
+  clearInterval(timer);timeLeft=20;updateTimer();
+  timer=setInterval(()=>{timeLeft--;updateTimer();if(timeLeft<=0){clearInterval(timer);if(!answered)timeOut();}},1000);
+}
+
+function updateTimer(){
+  const el=document.getElementById('timer-val');
+  el.textContent=timeLeft;
+  el.className=timeLeft<=5?'timer-val urgent':'timer-val';
+}
+
+function timeOut(){answered=true;answers.push({qIdx:current,selected:-1,correct:false});revealAnswer(-1);}
+
+function selectAnswer(idx){
+  if(answered)return;answered=true;clearInterval(timer);
+  const isCorrect=idx===questions[current].correct;
+  if(isCorrect)score++;
+  answers.push({qIdx:current,selected:idx,correct:isCorrect});
+  revealAnswer(idx);
+}
+
+function revealAnswer(selected){
+  const q=questions[current];
+  document.querySelectorAll('.opt').forEach((el,i)=>{
+    el.classList.add('disabled');
+    if(i===q.correct)el.classList.add('correct');
+    else if(i===selected&&selected!==q.correct)el.classList.add('wrong');
+  });
+  const exp=document.getElementById('explanation');
+  exp.innerHTML=selected===-1?`<strong>Время вышло!</strong> Правильный ответ выделен зелёным. ${q.explanation.replace('<strong>Верно!</strong> ','')}`:q.explanation;
+  exp.classList.add('show');
+  const nb=document.getElementById('next-btn');
+  nb.textContent=current<questions.length-1?'Следующий вопрос →':'Посмотреть результаты →';
+  nb.classList.add('show');
+}
+
+function nextQuestion(){current++;if(current<questions.length)renderQuestion();else showResults();}
+
+function showResults(){
+  clearInterval(timer);show('screen-results');
+  document.getElementById('score-num').textContent=`${score}/${questions.length}`;
+  const pct=score/questions.length;
+  const ok=pct>=0.6;
+  const configs=[
+    {min:0.9, title:'Отлично! Scrum у тебя в крови 🏆', sub:'Ты великолепно усвоил материал занятия 3. Роли, артефакты и церемонии — всё под контролем. Готов к занятию 4!'},
+    {min:0.6, title:'Хороший результат!', sub:'Основы Scrum усвоены. Перечитай объяснения к вопросам, где ошибся — особенно про артефакты и роли.'},
+    {min:0,   title:'Стоит повторить материал', sub:'Рекомендуем вернуться к слайдам занятия 3 и пройти квиз снова. Особое внимание — на роли команды и пять церемоний.'}
+  ];
+  const cfg=configs.find(c=>pct>=c.min);
+  document.getElementById('result-title').textContent=cfg.title;
+  document.getElementById('result-sub').textContent=cfg.sub;
+  const circle=document.getElementById('score-circle');
+  circle.style.borderColor=ok?'var(--border-success)':'var(--border-danger)';
+  document.getElementById('score-num').style.color=ok?'var(--text-success)':'var(--text-danger)';
+  document.getElementById('answers-review').innerHTML=answers.map(a=>{
+    const q=questions[a.qIdx];
+    const sel=a.selected>=0?q.opts[a.selected]:'Время вышло';
+    return `<div class="rev-item">
+      <i class="ti ${a.correct?'ti-circle-check':'ti-circle-x'} rev-icon ${a.correct?'ok':'no'}"></i>
+      <div><div class="rev-q">${q.q}</div>
+      <div class="rev-a">${a.correct?q.opts[q.correct]:`Ваш ответ: ${sel} · Правильно: ${q.opts[q.correct]}`}</div></div>
+    </div>`;
+  }).join('');
+}
+
+function restartQuiz(){startQuiz();}
+
+function shareResult(){
+  const text=`Квиз по занятию 3 «IT Project Management» — Scrum\nМой результат: ${score}/${questions.length} правильных ответов`;
+  navigator.clipboard?navigator.clipboard.writeText(text).then(()=>alert('Результат скопирован! Отправь его ментору.')):alert(text);
+}
+</script>
+</body>
+</html>
