@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>МегаФон Академия | Квиз: Роли и Процессы в IT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        :root {
+            --mf-green: #00B956;
+            --mf-green-hover: #009847;
+            --mf-purple: #7A3F95;
+            --mf-purple-light: #f3ebf7;
+            --mf-dark: #1D1D1F;
+            --mf-gray: #7E7E82;
+            --mf-bg: #F4F6F9;
+            --mf-card-bg: #FFFFFF;
+            --border-radius: 16px;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--mf-bg);
+            color: var(--mf-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 40px 20px;
+        }
+
+        .header {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding: 0 5px;
+        }
+
+        .logo-area { display: flex; align-items: center; gap: 12px; }
+        .logo-circle {
+            width: 42px; height: 42px;
+            background: linear-gradient(135deg, var(--mf-green), var(--mf-purple));
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 20px;
+            box-shadow: 0 4px 12px rgba(122, 63, 149, 0.2);
+        }
+        .logo-title { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 18px; letter-spacing: -0.5px; }
+        .logo-title span { color: var(--mf-green); }
+
+        .lesson-badge {
+            background-color: var(--mf-purple-light);
+            color: var(--mf-purple);
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-weight: 700; font-size: 13px;
+        }
+
+        .quiz-container {
+            width: 100%; max-width: 800px;
+            background-color: var(--mf-card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 40px; position: relative; overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.03);
+        }
+
+        .progress-section { margin-bottom: 30px; }
+        .progress-header { display: flex; justify-content: space-between; font-size: 14px; font-weight: 700; color: var(--mf-gray); margin-bottom: 10px; }
+        .progress-bar-bg { width: 100%; height: 8px; background-color: #E5E9F0; border-radius: 10px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--mf-green), #00D26A); border-radius: 10px; transition: width 0.4s ease; }
+
+        .question-card { display: none; animation: fadeIn 0.4s ease; }
+        .question-card.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .question-text { font-size: 19px; font-weight: 700; color: var(--mf-dark); line-height: 1.4; margin-bottom: 25px; }
+
+        .options-container { display: flex; flex-direction: column; gap: 14px; margin-bottom: 30px; }
+        .option-item {
+            display: flex; align-items: center; padding: 18px 22px;
+            background-color: #F8FAFC; border: 2px solid #E2E8F0;
+            border-radius: 12px; cursor: pointer; transition: var(--transition);
+        }
+        .option-item:hover { border-color: var(--mf-purple); background-color: var(--mf-purple-light); }
+        .option-item input[type="radio"] { display: none; }
+        .option-marker {
+            width: 22px; height: 22px; border: 2px solid #CBD5E1;
+            border-radius: 50%; margin-right: 15px; display: flex;
+            align-items: center; justify-content: center; flex-shrink: 0;
+            background-color: white; transition: var(--transition);
+        }
+        .option-marker::after { content: ''; width: 10px; height: 10px; background-color: white; border-radius: 50%; transform: scale(0); transition: var(--transition); }
+        .option-item.selected { border-color: var(--mf-purple); background-color: var(--mf-purple-light); }
+        .option-item.selected .option-marker { border-color: var(--mf-purple); background-color: var(--mf-purple); }
+        .option-item.selected .option-marker::after { transform: scale(1); }
+        .option-text { font-size: 16px; font-weight: 600; color: var(--mf-dark); user-select: none; line-height: 1.4; }
+
+        .feedback-box {
+            display: none; padding: 20px; border-radius: 12px;
+            margin-bottom: 25px; font-size: 15px; line-height: 1.5;
+            animation: slideDown 0.3s ease;
+        }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .feedback-box.correct { gap: 15px; background-color: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; }
+        .feedback-box.incorrect { gap: 15px; background-color: #FEF2F2; border: 1px solid #FEE2E2; color: #991B1B; }
+        .feedback-icon { font-size: 22px; margin-top: 2px; }
+        .feedback-title { font-weight: 700; margin-bottom: 5px; }
+
+        .navigation-area { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #E2E8F0; padding-top: 25px; }
+        .btn {
+            font-family: 'Montserrat', sans-serif; font-size: 15px; font-weight: 700;
+            padding: 14px 28px; border: none; border-radius: 30px;
+            cursor: pointer; transition: var(--transition);
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .btn-primary { background-color: var(--mf-green); color: white; box-shadow: 0 4px 15px rgba(0, 185, 86, 0.25); }
+        .btn-primary:hover { background-color: var(--mf-green-hover); transform: translateY(-2px); }
+        .btn-primary:disabled { background-color: #CBD5E1; color: #94A3B8; cursor: not-allowed; transform: none; }
+        .btn-secondary { background-color: transparent; color: var(--mf-gray); border: 1px solid #CBD5E1; }
+
+        .results-screen { display: none; text-align: center; animation: fadeIn 0.5s ease; }
+        .results-score-circle {
+            width: 130px; height: 130px; border-radius: 50%;
+            background: var(--mf-purple-light); color: var(--mf-purple);
+            font-size: 38px; font-family: 'Montserrat', sans-serif; font-weight: 700;
+            display: flex; align-items: center; justify-content: center; margin: 0 auto 25px;
+        }
+        .results-rank { display: inline-block; background: linear-gradient(135deg, var(--mf-green), #00D26A); color: white; padding: 8px 20px; border-radius: 30px; margin-bottom: 25px; font-weight: 700; }
+        .results-buttons-container { display: flex; flex-direction: column; align-items: center; gap: 12px; max-width: 320px; margin: 0 auto; }
+        .results-buttons-container .btn { width: 100%; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="logo-area">
+            <div class="logo-circle"><i class="fa-solid fa-graduation-cap"></i></div>
+            <div class="logo-title">МегаФон <span>Академия</span></div>
+        </div>
+        <div class="lesson-badge">Занятие 5</div>
+    </div>
+
+    <div class="quiz-container">
+        
+        <div class="progress-section" id="progressSection">
+            <div class="progress-header">
+                <span id="progressText">Вопрос 1 из 8</span>
+                <span id="progressPercentage">0%</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progressBarFill"></div>
+            </div>
+
+            <div class="timer-section" id="timerSection" style="margin-top: 18px;">
+                <div class="timer-header" style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; color: var(--mf-gray); margin-bottom: 6px;">
+                    <span><i class="fa-regular fa-clock" style="margin-right: 4px; color: var(--mf-purple);"></i> Время на ответ:</span>
+                    <span id="timerText">20 сек</span>
+                </div>
+                <div class="progress-bar-bg" style="height: 6px; background-color: #E5E9F0;">
+                    <div class="progress-bar-fill" id="timerBarFill" style="width: 100%; background: var(--mf-green); transition: width 1s linear, background-color 0.3s ease;"></div>
+                </div>
+            </div>
+        </div>
+
+        <form id="quizForm">
+            
+            <div class="question-card active" data-qindex="0" data-correct="2">
+                <div class="question-text">1. Каков главный фокус роли Product Manager (PdM) в IT-команде?</div>
+                <div class="options-container">
+                    <label class="option-item"><input type="radio" name="q1" value="0"><span class="option-marker"></span><span class="option-text">Соблюдение сроков и управление ресурсами</span></label>
+                    <label class="option-item"><input type="radio" name="q1" value="1"><span class="option-marker"></span><span class="option-text">Написание кода и архитектура базы данных</span></label>
+                    <label class="option-item"><input type="radio" name="q1" value="2"><span class="option-marker"></span><span class="option-text">Ценность продукта для рынка и видение (Vision)</span></label>
+                    <label class="option-item"><input type="radio" name="q1" value="3"><span class="option-marker"></span><span class="option-text">Настройка серверов и CI/CD процессов</span></label>
+                </div>
+                <div class="feedback-box correct" id="feedback-0-correct"><i class="fa-solid fa-circle-check feedback-icon"></i><div><div class="feedback-title">Верно!</div><div>PdM отвечает за бизнес-составляющую и вопрос «Что и зачем мы строим?». Сроками же занимается PM.</div></div></div>
+                <div class="feedback-box incorrect" id="feedback-0-incorrect"><i class="fa-solid fa-circle-xmark feedback-icon"></i><div><div class="feedback-title">Ошибка.</div><div>PdM сфокусирован на ценности продукта и потребностях пользователей. Управление сроками — задача Project Manager.</div></div></div>
+            </div>
+
+            <div class="question-card" data-qindex="1" data-correct="1">
+                <div class="question-text">2. Какого специалиста называют «мостом» между бизнесом и технической командой разработки?</div>
+                <div class="options-container">
+                    <label class="option-item"><input type="radio" name="q2" value="0"><span class="option-marker"></span><span class="option-text">UI-дизайнер</span></label>
+                    <label class="option-item"><input type="radio" name="q2" value="1"><span class="option-marker"></span><span class="option-text">Аналитик (Business/System Analyst)</span></label>
+                    <label class="option-item"><input type="radio" name="q2" value="2"><span class="option-marker"></span><span class="option-text">QA Engineer</span></label>
+                    <label class="option-item"><input type="radio" name="q2" value="3"><span class="option-marker"></span><span class="option-text">DevOps-инженер</span></label>
+                </div>
+                <div class="feedback-box correct" id="feedback-1-correct"><i class="fa-solid fa-circle-check feedback-icon"></i><div><div class="feedback-title">Точно!</div><div>Аналитики переводят «хотелки» бизнеса на язык технических требований (ТЗ), понятный разработчикам.</div></div></div>
+                <div class="feedback-box incorrect" id="feedback-1-incorrect"><i class="fa-solid fa-circle-xmark feedback-icon"></i><div><div class="feedback-title">Не совсем.</div><div>Эту роль выполняют аналитики. Они формализуют требования бизнеса в технические задания.</div></div></div>
+            </div>
+
+            <div class="question-card" data-qindex="2" data-correct="3">
+                <div class="question-text">3. Чем занимается Backend Developer в процессе создания приложения?</div>
+                <div class="options-container">
+                    <label class="option-item"><input type="radio" name="q3" value="0"><span class="option-marker"></span><span class="option-text">Рисует макеты в Figma</span></label>
+                    <label class="option-item"><input type="radio" name="q3" value="1"><span class="option-marker"></span><span class="option-text">Верстает кнопки и анимации интерфейса</span></label>
+                    <label class="option-item"><input type="radio" name="q3" value="2"><span class="option-marker"></span><span class="option-text">Проводит ручное тестирование продукта</span></label>
+                    <label class="option-item"><input type="radio" name="q3" value="3"><span class="option-marker"></span><span class="option-text">Разрабатывает серверную логику, API и работает с БД</span></label>
+                </div>
+                <div class="feedback-box correct" id="feedback-2-correct"><i class="fa-solid fa-circle-check feedback-icon"></i><div><div class="feedback-title">Правильно!</div><div>Backend — это «мозг» под капотом, скрытый от пользователя, где происходят все расчеты и хранение данных.</div></div></div>
+                <div class="feedback-box incorrect" id="feedback-2-incorrect"><i class="fa-solid fa-circle-xmark feedback-icon"></i><div><div class="feedback-title">Нет.</div><div>Backend-разработчик отвечает за серверную часть, базы данных и API. Интерфейсом занимается Frontend.</div></div></div>
+            </div>
+
+            <div class="question-card" data-qindex="3" data-correct="0">
+                <div class="question-text">4. В чем главное отличие UX-дизайнера от UI-дизайнера?</div>
+                <div class="options-container">
+                    <label class="option-item"><input type="radio" name="q4" value="0"><span class="option-marker"></span><span class="option-text">UX проектирует опыт и логику, UI — визуальный интерфейс</span></label>
+                    <label class="option-item"><input type="radio" name="q4" value="1"><span class="option-marker"></span><span class="option-text">UX рисует иконки, UI пишет тексты</span></label>
+                    <label class="option-item"><input type="radio" name="q4" value="2"><span class="option-marker"></span><span class="option-text">Это один и тот же человек, разницы нет</span></label>
+                    <label class="option-item"><input type="radio" name="q4" value="3"><span class="option-marker"></span><span class="option-text">UX работает только с мобильными приложениями, UI — с сайтами</span></label>
+                </div>
+                <div class="feedback-box correct" id="feedback-3-correct"><i class="fa-solid fa-circle-check feedback-icon"></i><div><div class="feedback-title">Именно так!</div><div>UX (Experience) — про удобство и сценарии, UI (Interface) — про эстетику, цвета и кнопки.</div></div></div>
+                <div class="feedback-box incorrect" id="feedback-3-incorrect"><i class="fa-solid fa-circle-xmark feedback-icon"></i><div><div class="feedback-title">Ошибка.</div><div>UX — это User Experience (опыт, логика), а UI — это User Interface (внешний вид).</div></div></div>
+            </div>
+
+            <div class="question-card" data-qindex="4" data-correct="2">
+                <div class="question-text">5. Какова основная задача DevOps-инженера?</div>
+                <div class="options-container">
+                    <label class="option-item"><input type="radio" name="q5" value="0"><span class="option-marker"></span><span class="option-text">Искать баги в приложении</span></label>
+                    <label class="option-item"><input type="radio" name="q5" value="1"><span class="option-marker"></span><span class="option-text">Управлять рисками проекта</span></label>
+                    <label class="option-item"><input type="radio" name="q5" value="2"><span class="option-marker"></span><span class="option-text">Автоматизировать доставку кода (CI/CD) и настраивать серверы</span></label>
+                    <label class="option-item"><input type="radio" name="q5" value="3"><span class="option-marker"></span><span class="option-text">Разрабатывать мобильные приложения на iOS</span></label>
+                </div>
+                <div class="feedback-box correct" id="feedback-4-correct"><i class="fa-solid fa-circle-check feedback-icon"></i><div><div class="feedback-title">Верно!</div><div>DevOps связывает разработку (Dev) и эксплуатацию (Ops), обеспечивая быстрый и стабильный релиз.</div></div></div>
+                <div class="feedback-box incorrect" id="feedback-4-incorrect"><i class="fa-solid fa-circle-xmark feedback-icon"></i><div><div class="feedback-title">Неверно.</div><div>DevOps настраивает инфраструктуру, автоматизирует деплой (выкладку) кода и следит за работой серверов.</div></div></div>
+            </div>
+
+            <div class="question-card" data-qindex="5" data-correct="1">
+                <div class="question-text">6. Зачем в банковских проектах нужен Information Security Specialist?</div>
+                <div class="options-container">
+                    <label class="option-item"><input type="radio" name="q6" value="0"><span class="option-marker"></span><span class="option-text">Чтобы приложение работало быстрее</span></label>
+                    <label class="option-item"><input type="radio" name="q6" value="1"><span class="option-marker"></span><span class="option-text">Для защиты данных, аудита уязвимостей и соответствия законам</span></label>
+                    <label class="option-item"><input type="radio" name="q6" value="2"><span class="option-marker"></span><span class="option-text">Чтобы помогать пользователям восстанавливать пароли</span></label>
+                    <label class="option-item"><input type="radio" name="q6" value="3"><span class="option-marker"></span><span class="option-text">Для обучения сотрудников работе с Excel</span></label>
+                </div>
+                <div class="feedback-box correct" id="feedback-5-correct"><i class="fa-solid fa-circle-check feedback-icon"></i><div><div class="feedback-title">Да!</div><div>В финтехе безопасность критична: защита транзакций и персональных данных — приоритет №1.</div></div></div>
+                <div class="feedback-box incorrect" id="feedback-5-incorrect"><i class="fa-solid fa-circle-xmark feedback-icon"></i><div><div class="feedback-title">Ошибка.</div><div>Безопасник защищает систему от взломов и следит за соблюдением стандартов (например, ФЗ-152).</div></div></div>
+            </div>
+
+            <div class="question-card" data-qindex="6" data-correct="3">
+                <div class="question-text">7. Реальный кейс: Кто создает API для функции оплаты мобильной связи?</div>
+                <div class="options-container">
+                    <label class="option-item"><input type="radio" name="q7" value="0"><span class="option-marker"></span><span class="option-text">Frontend-разработчик</span></label>
+                    <label class="option-item"><input type="radio" name="q7" value="1"><span class="option-marker"></span><span class="option-text">Product Manager</span></label>
+                    <label class="option-item"><input type="radio" name="q7" value="2"><span class="option-marker"></span><span class="option-text">UX Designer</span></label>
+                    <label class="option-item"><input type="radio" name="q7" value="3"><span class="option-marker"></span><span class="option-text">Backend-разработчик</span></label>
+                </div>
+                <div class="feedback-box correct" id="feedback-6-correct"><i class="fa-solid fa-circle-check feedback-icon"></i><div><div class="feedback-title">Верно!</div><div>API — это технический интерфейс взаимодействия программ. Его пишет бэкенд, чтобы фронтенд мог отправить запрос на оплату.</div></div></div>
+                <div class="feedback-box incorrect" id="feedback-6-incorrect"><i class="fa-solid fa-circle-xmark feedback-icon"></i><div><div class="feedback-title">Неверно.</div><div>API — это задача Backend-разработчика. Фронтенд лишь «дергает» (использует) это API.</div></div></div>
+            </div>
+
+            <div class="question-card" data-qindex="7" data-correct="1">
+                <div class="question-text">8. Какова роль Project Manager (PM) в цепочке создания функции?</div>
+                <div class="options-container">
+                    <label class="option-item"><input type="radio" name="q8" value="0"><span class="option-marker"></span><span class="option-text">Самостоятельно писать код в критических ситуациях</span></label>
+                    <label class="option-item"><input type="radio" name="q8" value="1"><span class="option-marker"></span><span class="option-text">Координировать все роли, следить за сроками и убирать препятствия</span></label>
+                    <label class="option-item"><input type="radio" name="q8" value="2"><span class="option-marker"></span><span class="option-text">Рисовать иконки, если дизайнер не успевает</span></label>
+                    <label class="option-item"><input type="radio" name="q8" value="3"><span class="option-marker"></span><span class="option-text">Только отчитываться перед руководством</span></label>
+                </div>
+                <div class="feedback-box correct" id="feedback-7-correct"><i class="fa-solid fa-circle-check feedback-icon"></i><div><div class="feedback-title">Браво!</div><div>PM — это дирижер оркестра. Он делает так, чтобы все роли сработали синхронно и продукт вышел вовремя.</div></div></div>
+                <div class="feedback-box incorrect" id="feedback-7-incorrect"><i class="fa-solid fa-circle-xmark feedback-icon"></i><div><div class="feedback-title">Ошибочка.</div><div>PM координирует команду, управляет коммуникациями и устраняет блокеры, чтобы проект двигался по плану.</div></div></div>
+            </div>
+
+        </form>
+
+        <div class="results-screen" id="resultsScreen">
+            <div class="results-score-circle" id="resultsScore">0/8</div>
+            <div class="results-title" id="resultsTitle">Тест пройден!</div>
+            <div class="results-rank" id="resultsRank">Junior PM</div>
+            <div class="results-desc" id="resultsDesc">Вы ответили на вопросы.</div>
+            <div class="results-buttons-container">
+                <button class="btn btn-primary" id="btnCopy" onclick="copyToClipboard()"><i class="fa-solid fa-copy"></i> Скопировать результат</button>
+                <button class="btn btn-secondary" onclick="restartQuiz()"><i class="fa-solid fa-rotate-right"></i> Пройти заново</button>
+            </div>
+        </div>
+
+        <div class="navigation-area" id="navigationArea">
+            <button class="btn btn-secondary" id="btnPrev" onclick="navigateQuestion(-1)" disabled><i class="fa-solid fa-arrow-left"></i> Назад</button>
+            <button class="btn btn-primary" id="btnNext" onclick="navigateQuestion(1)" disabled><span>Ответить</span> <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+    </div>
+
+    <script>
+        const cards = document.querySelectorAll('.question-card');
+        const progressBarFill = document.getElementById('progressBarFill');
+        const progressText = document.getElementById('progressText');
+        const progressPercentage = document.getElementById('progressPercentage');
+        const btnPrev = document.getElementById('btnPrev');
+        const btnNext = document.getElementById('btnNext');
+        const navigationArea = document.getElementById('navigationArea');
+        const progressSection = document.getElementById('progressSection');
+        const resultsScreen = document.getElementById('resultsScreen');
+        const quizForm = document.getElementById('quizForm');
+        const timerText = document.getElementById('timerText');
+        const timerBarFill = document.getElementById('timerBarFill');
+
+        let currentStep = 0; let score = 0; const totalSteps = cards.length;
+        let answersState = Array(totalSteps).fill(null);
+        let timerInterval; let timeLeft = 20;
+
+        document.querySelectorAll('.option-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const card = this.closest('.question-card');
+                const qIndex = parseInt(card.getAttribute('data-qindex'));
+                if (answersState[qIndex] !== null) return;
+                card.querySelectorAll('.option-item').forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+                this.querySelector('input[type="radio"]').checked = true;
+                btnNext.disabled = false;
+            });
+        });
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timeLeft = 20;
+            timerText.innerText = `${timeLeft} сек`;
+            timerBarFill.style.transition = 'none';
+            timerBarFill.style.width = '100%';
+            timerBarFill.style.backgroundColor = 'var(--mf-green)';
+            timerBarFill.offsetHeight; 
+            timerBarFill.style.transition = 'width 1s linear, background-color 0.3s ease';
+            timerInterval = setInterval(() => {
+                timeLeft--; timerText.innerText = `${timeLeft} сек`;
+                const pct = (timeLeft / 20) * 100;
+                timerBarFill.style.width = `${pct}%`;
+                if (timeLeft <= 5) timerBarFill.style.backgroundColor = '#EF4444';
+                if (timeLeft <= 0) { clearInterval(timerInterval); autoSubmitTimeout(); }
+            }, 1000);
+        }
+
+        function stopTimer() { clearInterval(timerInterval); }
+
+        function autoSubmitTimeout() {
+            const activeCard = cards[currentStep]; const qIndex = parseInt(activeCard.getAttribute('data-qindex'));
+            answersState[qIndex] = false;
+            document.getElementById(`feedback-${qIndex}-incorrect`).style.display = 'flex';
+            btnNext.innerHTML = currentStep === totalSteps - 1 ? 'Результаты <i class="fa-solid fa-circle-check"></i>' : 'Далее <i class="fa-solid fa-arrow-right"></i>';
+            btnNext.disabled = false; btnPrev.disabled = true;
+        }
+
+        function updateProgress() {
+            const pct = Math.round((currentStep / totalSteps) * 100);
+            progressBarFill.style.width = pct + '%';
+            progressPercentage.innerText = pct + '%';
+            progressText.innerText = `Вопрос ${currentStep + 1} из ${totalSteps}`;
+        }
+
+        function navigateQuestion(direction) {
+            const activeCard = cards[currentStep]; const qIndex = parseInt(activeCard.getAttribute('data-qindex'));
+            if (direction === 1) {
+                if (answersState[qIndex] === null) {
+                    stopTimer(); const selectedOption = activeCard.querySelector('input[type="radio"]:checked');
+                    if (!selectedOption) return;
+                    const userVal = parseInt(selectedOption.value); const correctVal = parseInt(activeCard.getAttribute('data-correct'));
+                    if (userVal === correctVal) { score++; document.getElementById(`feedback-${qIndex}-correct`).style.display = 'flex'; answersState[qIndex] = true; }
+                    else { document.getElementById(`feedback-${qIndex}-incorrect`).style.display = 'flex'; answersState[qIndex] = false; selectedOption.closest('.option-item').style.borderColor = '#EF4444'; }
+                    btnNext.innerHTML = currentStep === totalSteps - 1 ? 'Результаты <i class="fa-solid fa-circle-check"></i>' : 'Далее <i class="fa-solid fa-arrow-right"></i>';
+                    btnPrev.disabled = true; return;
+                }
+                if (currentStep < totalSteps - 1) {
+                    activeCard.classList.remove('active'); currentStep++; cards[currentStep].classList.add('active');
+                    btnNext.innerHTML = 'Ответить <i class="fa-solid fa-arrow-right"></i>'; btnNext.disabled = true; btnPrev.disabled = false; updateProgress(); startTimer();
+                } else { showResults(); }
+            } else if (direction === -1 && currentStep > 0) {
+                activeCard.classList.remove('active'); currentStep--; cards[currentStep].classList.add('active');
+                btnNext.disabled = false; btnPrev.disabled = currentStep === 0; updateProgress(); stopTimer();
+            }
+        }
+
+        function showResults() {
+            stopTimer(); quizForm.style.display = 'none'; progressSection.style.display = 'none'; navigationArea.style.display = 'none';
+            const resScore = document.getElementById('resultsScore'); const resTitle = document.getElementById('resultsTitle');
+            const resRank = document.getElementById('resultsRank'); const resDesc = document.getElementById('resultsDesc');
+            resScore.innerText = `${score}/${totalSteps}`;
+            if (score === 8) { resTitle.innerText = "Идеально!"; resRank.innerText = "Senior PM 👑"; resDesc.innerText = "Вы великолепно ориентируетесь во всех ролях и процессах современной IT-команды!"; }
+            else if (score >= 6) { resTitle.innerText = "Хороший результат!"; resRank.innerText = "Middle PM 🚀"; resDesc.innerText = "Вы уверенно понимаете структуру команды, но пара нюансов требуют повторения."; }
+            else { resTitle.innerText = "Нужно подучить!"; resRank.innerText = "Junior PM 🌱"; resDesc.innerText = "Рекомендуем еще раз просмотреть слайды о разнице между UX/UI и задачах DevOps."; }
+            resultsScreen.style.display = 'block';
+        }
+
+        function copyToClipboard() {
+            const scoreText = document.getElementById('resultsScore').innerText;
+            const rankText = document.getElementById('resultsRank').innerText;
+            const textToCopy = `МегаФон Академия | Квиз: Роли и Процессы\nРезультат: ${scoreText}\nРанг: ${rankText}`;
+            const el = document.createElement('textarea'); el.value = textToCopy; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
+            const btn = document.getElementById('btnCopy'); const old = btn.innerHTML; btn.innerHTML = '<i class="fa-solid fa-check"></i> Скопировано!'; setTimeout(() => btn.innerHTML = old, 2000);
+        }
+
+        function restartQuiz() {
+            currentStep = 0; score = 0; answersState = Array(totalSteps).fill(null);
+            cards.forEach(c => {
+                c.classList.remove('active');
+                c.querySelectorAll('.option-item').forEach(o => { o.classList.remove('selected'); o.style.borderColor = ''; });
+                c.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+                c.querySelectorAll('.feedback-box').forEach(f => f.style.display = 'none');
+            });
+            cards[0].classList.add('active'); quizForm.style.display = 'block'; progressSection.style.display = 'block'; navigationArea.style.display = 'flex'; resultsScreen.style.display = 'none';
+            btnPrev.disabled = true; btnNext.innerHTML = 'Ответить <i class="fa-solid fa-arrow-right"></i>'; btnNext.disabled = true; updateProgress(); startTimer();
+        }
+
+        window.onload = () => { updateProgress(); startTimer(); }
+    </script>
+</body>
+</html>
