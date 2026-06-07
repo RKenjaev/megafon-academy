@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Квиз — Занятие 1 | IT Project Management</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --bg-secondary: #f5f5f4;
+    --bg-info: #e6f1fb;
+    --bg-success: #eaf3de;
+    --bg-danger: #fcebeb;
+    --text: #1a1a1a;
+    --text-secondary: #6b7280;
+    --text-info: #185fa5;
+    --text-success: #3b6d11;
+    --text-danger: #a32d2d;
+    --border: rgba(0,0,0,0.12);
+    --border-secondary: rgba(0,0,0,0.22);
+    --border-info: #85b7eb;
+    --border-success: #97c459;
+    --border-danger: #f09595;
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1e;
+      --bg-secondary: #2c2c2e;
+      --bg-info: #0c447c;
+      --bg-success: #27500a;
+      --bg-danger: #791f1f;
+      --text: #f2f2f7;
+      --text-secondary: #aeaeb2;
+      --text-info: #b5d4f4;
+      --text-success: #c0dd97;
+      --text-danger: #f7c1c1;
+      --border: rgba(255,255,255,0.12);
+      --border-secondary: rgba(255,255,255,0.22);
+      --border-info: #378add;
+      --border-success: #639922;
+      --border-danger: #e24b4a;
+    }
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg-secondary);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+
+  .card {
+    background: var(--bg);
+    border-radius: var(--radius-lg);
+    border: 0.5px solid var(--border);
+    padding: 2rem;
+    width: 100%;
+    max-width: 600px;
+  }
+
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  .hero { text-align: center; padding: 1rem 0 2rem; }
+  .hero-icon { font-size: 52px; color: var(--text-info); margin-bottom: 1rem; }
+  .hero h1 { font-size: 22px; font-weight: 500; color: var(--text); margin-bottom: .5rem; }
+  .hero .course { font-size: 12px; font-weight: 500; letter-spacing: .08em; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 1.5rem; }
+  .hero p { font-size: 15px; color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.7; }
+
+  .meta-row { display: flex; justify-content: center; gap: 1.5rem; margin-bottom: 2rem; }
+  .meta-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary); }
+  .meta-item i { font-size: 16px; }
+
+  .start-btn {
+    background: var(--bg-info);
+    color: var(--text-info);
+    border: none;
+    border-radius: var(--radius-lg);
+    padding: .85rem 2.5rem;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity .15s;
+  }
+  .start-btn:hover { opacity: .85; }
+
+  .q-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+  .q-counter { font-size: 13px; color: var(--text-secondary); }
+  .timer-wrap { display: flex; align-items: center; gap: 6px; background: var(--bg-secondary); border-radius: var(--radius); padding: .35rem .75rem; }
+  .timer-val { font-size: 14px; font-weight: 500; color: var(--text); min-width: 20px; text-align: center; }
+  .timer-val.urgent { color: var(--text-danger); }
+
+  .progress-bar { height: 4px; background: var(--border); border-radius: 2px; margin-bottom: 1.75rem; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--border-info); border-radius: 2px; transition: width .4s ease; }
+
+  .q-text { font-size: 17px; font-weight: 500; color: var(--text); line-height: 1.5; margin-bottom: 1.5rem; }
+
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt {
+    display: flex; align-items: center; gap: 12px;
+    padding: .85rem 1rem;
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    background: var(--bg);
+    transition: border-color .15s, background .15s;
+  }
+  .opt:hover:not(.disabled) { border-color: var(--border-info); background: var(--bg-info); }
+  .opt-letter {
+    width: 30px; height: 30px; border-radius: 50%;
+    border: 0.5px solid var(--border-secondary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 500; color: var(--text-secondary); flex-shrink: 0;
+  }
+  .opt-text { font-size: 14px; color: var(--text); line-height: 1.4; }
+  .opt.correct { border-color: var(--border-success); background: var(--bg-success); }
+  .opt.correct .opt-letter { border-color: var(--border-success); color: var(--text-success); }
+  .opt.wrong { border-color: var(--border-danger); background: var(--bg-danger); }
+  .opt.wrong .opt-letter { border-color: var(--border-danger); color: var(--text-danger); }
+  .opt.disabled { cursor: default; }
+
+  .explanation {
+    margin-top: 1rem; padding: .85rem 1rem;
+    background: var(--bg-secondary); border-radius: var(--radius);
+    font-size: 13px; color: var(--text-secondary); line-height: 1.6;
+    display: none;
+  }
+  .explanation.show { display: block; }
+  .explanation strong { color: var(--text); font-weight: 500; }
+
+  .next-btn {
+    margin-top: 1.25rem; width: 100%; padding: .75rem;
+    border: 0.5px solid var(--border-secondary);
+    border-radius: var(--radius-lg);
+    background: var(--bg); color: var(--text);
+    font-size: 14px; cursor: pointer; display: none;
+    transition: background .15s;
+  }
+  .next-btn:hover { background: var(--bg-secondary); }
+  .next-btn.show { display: block; }
+
+  .results-wrap { text-align: center; padding: 1rem 0 1rem; }
+  .score-circle {
+    width: 120px; height: 120px; border-radius: 50%;
+    border: 3px solid var(--border-info);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    margin: 0 auto 1.5rem;
+  }
+  .score-num { font-size: 32px; font-weight: 500; color: var(--text-info); }
+  .score-label { font-size: 12px; color: var(--text-secondary); }
+  .result-title { font-size: 20px; font-weight: 500; color: var(--text); margin-bottom: .5rem; }
+  .result-sub { font-size: 14px; color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.6; }
+
+  .answers-review { text-align: left; margin-bottom: 2rem; }
+  .rev-item { display: flex; align-items: flex-start; gap: 10px; padding: .75rem 0; border-bottom: 0.5px solid var(--border); }
+  .rev-icon { font-size: 17px; flex-shrink: 0; margin-top: 1px; }
+  .rev-icon.ok { color: var(--text-success); }
+  .rev-icon.no { color: var(--text-danger); }
+  .rev-q { font-size: 13px; color: var(--text-secondary); margin-bottom: 3px; line-height: 1.4; }
+  .rev-a { font-size: 13px; color: var(--text); font-weight: 500; }
+
+  .btn-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .retry-btn {
+    border: 0.5px solid var(--border-secondary); border-radius: var(--radius-lg);
+    padding: .75rem 1.5rem; font-size: 14px; cursor: pointer;
+    background: var(--bg); color: var(--text); transition: background .15s;
+  }
+  .retry-btn:hover { background: var(--bg-secondary); }
+  .share-btn {
+    border: none; border-radius: var(--radius-lg);
+    padding: .75rem 1.5rem; font-size: 14px; cursor: pointer;
+    background: var(--bg-info); color: var(--text-info);
+    font-weight: 500; transition: opacity .15s;
+  }
+  .share-btn:hover { opacity: .85; }
+
+  .footer { text-align: center; margin-top: 1.5rem; font-size: 12px; color: var(--text-secondary); }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <div class="screen active" id="screen-start">
+    <div class="hero">
+      <div class="hero-icon"><i class="ti ti-school"></i></div>
+      <div class="course">Академия Мегафон · IT Project Management</div>
+      <h1>Квиз — Занятие 1</h1>
+      <p>Проверь, как усвоил материал первого занятия.<br>5 вопросов · 20 секунд на каждый вопрос.</p>
+      <div class="meta-row">
+        <div class="meta-item"><i class="ti ti-help-circle"></i> 5 вопросов</div>
+        <div class="meta-item"><i class="ti ti-clock"></i> ~2 минуты</div>
+        <div class="meta-item"><i class="ti ti-trophy"></i> Рейтинг по итогу</div>
+      </div>
+      <button class="start-btn" onclick="startQuiz()"><i class="ti ti-player-play"></i> Начать квиз</button>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-question">
+    <div class="q-header">
+      <span class="q-counter" id="q-counter">Вопрос 1 из 5</span>
+      <div class="timer-wrap">
+        <i class="ti ti-clock" style="font-size:15px;color:var(--text-secondary)"></i>
+        <span class="timer-val" id="timer-val">20</span>
+      </div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="q-text" id="q-text"></div>
+    <div class="options" id="options"></div>
+    <div class="explanation" id="explanation"></div>
+    <button class="next-btn" id="next-btn" onclick="nextQuestion()"></button>
+  </div>
+
+  <div class="screen" id="screen-results">
+    <div class="results-wrap">
+      <div class="score-circle" id="score-circle">
+        <span class="score-num" id="score-num">0/5</span>
+        <span class="score-label">результат</span>
+      </div>
+      <div class="result-title" id="result-title"></div>
+      <div class="result-sub" id="result-sub"></div>
+      <div class="answers-review" id="answers-review"></div>
+      <div class="btn-row">
+        <button class="retry-btn" onclick="restartQuiz()"><i class="ti ti-refresh"></i> Пройти снова</button>
+        <button class="share-btn" onclick="shareResult()"><i class="ti ti-copy"></i> Скопировать результат</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+<div class="footer">Академия Мегафон · Курс IT Project Management · Занятие 1</div>
+
+<script>
+const questions = [
+  {
+    q: "Стив Джобс придумал iPhone, а Тим Кук обеспечил его производство и поставки. Какие роли они играли?",
+    opts: ["Оба были Product Manager-ами","Джобс — Product Manager, Кук — Project Manager","Джобс — Project Manager, Кук — Product Manager","Оба были Project Manager-ами"],
+    correct: 1,
+    explanation: "<strong>Верно!</strong> Джобс думал о том, ЧТО создавать и ЗАЧЕМ — классический Product Manager. Кук отвечал за то, КАК и КОГДА это будет произведено — это роль Project Manager."
+  },
+  {
+    q: "Компания построила новый офис. Проект завершён, офис открыт. Что происходит с Project Manager после открытия?",
+    opts: ["Продолжает улучшать офис и реагировать на отзывы сотрудников","Переходит на должность Product Manager","Его работа по данному проекту завершена","Становится владельцем офиса"],
+    correct: 2,
+    explanation: "<strong>Верно!</strong> Project Manager управляет проектом с чётким началом и концом. После открытия офиса его задача выполнена. Product Manager, напротив, работает с продуктом постоянно."
+  },
+  {
+    q: "Что из перечисленного является примером продукта, а не проекта?",
+    opts: ["Запуск новой фичи в мобильном приложении","Приложение Telegram, которое постоянно развивается","Строительство дата-центра","Проведение курса IT Project Management"],
+    correct: 1,
+    explanation: "<strong>Верно!</strong> Telegram — это продукт: существует постоянно, не имеет конечной даты и постоянно улучшается. Остальные варианты — проекты с конкретным результатом и сроком."
+  },
+  {
+    q: "Agile-подход отличается от Waterfall тем, что...",
+    opts: ["Требует больше документации на каждом этапе","Все этапы строго последовательны и не повторяются","Результат появляется только в самом конце","Предполагает итеративную разработку и гибкость к изменениям"],
+    correct: 3,
+    explanation: "<strong>Верно!</strong> Ключевое отличие Agile — работа спринтами. После каждого спринта есть рабочий результат, а команда может адаптироваться к изменениям. В Waterfall всё строго последовательно."
+  },
+  {
+    q: "Delivery Manager — это...",
+    opts: ["Курьер, который доставляет оборудование для команды","Роль, совмещающая функции Product и Project Manager","Другое название для Scrum Master","Специалист по логистике в IT-компании"],
+    correct: 1,
+    explanation: "<strong>Верно!</strong> Delivery Manager — симбиоз ролей. Отвечает и за ЧТО поставляется (Product Manager), и за КАК поставляется (Project Manager). Типичен для крупных IT-компаний."
+  }
+];
+
+let current=0, score=0, answers=[], timer=null, timeLeft=20, answered=false;
+
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+
+function startQuiz(){current=0;score=0;answers=[];show('screen-question');renderQuestion();}
+
+function renderQuestion(){
+  answered=false;
+  const q=questions[current];
+  document.getElementById('q-counter').textContent=`Вопрос ${current+1} из ${questions.length}`;
+  document.getElementById('progress-fill').style.width=`${(current/questions.length)*100}%`;
+  document.getElementById('q-text').textContent=q.q;
+  document.getElementById('explanation').className='explanation';
+  document.getElementById('next-btn').className='next-btn';
+  const letters=['А','Б','В','Г'];
+  const opts=document.getElementById('options');
+  opts.innerHTML='';
+  q.opts.forEach((o,i)=>{
+    const d=document.createElement('div');
+    d.className='opt';
+    d.innerHTML=`<div class="opt-letter">${letters[i]}</div><div class="opt-text">${o}</div>`;
+    d.onclick=()=>selectAnswer(i);
+    opts.appendChild(d);
+  });
+  startTimer();
+}
+
+function startTimer(){
+  clearInterval(timer);timeLeft=20;updateTimer();
+  timer=setInterval(()=>{timeLeft--;updateTimer();if(timeLeft<=0){clearInterval(timer);if(!answered)timeOut();}},1000);
+}
+
+function updateTimer(){
+  const el=document.getElementById('timer-val');
+  el.textContent=timeLeft;
+  el.className=timeLeft<=5?'timer-val urgent':'timer-val';
+}
+
+function timeOut(){answered=true;answers.push({qIdx:current,selected:-1,correct:false});revealAnswer(-1);}
+
+function selectAnswer(idx){
+  if(answered)return;answered=true;clearInterval(timer);
+  const isCorrect=idx===questions[current].correct;
+  if(isCorrect)score++;
+  answers.push({qIdx:current,selected:idx,correct:isCorrect});
+  revealAnswer(idx);
+}
+
+function revealAnswer(selected){
+  const q=questions[current];
+  document.querySelectorAll('.opt').forEach((el,i)=>{
+    el.classList.add('disabled');
+    if(i===q.correct)el.classList.add('correct');
+    else if(i===selected&&selected!==q.correct)el.classList.add('wrong');
+  });
+  const exp=document.getElementById('explanation');
+  const cleanExp = q.explanation.replace('<strong>Верно!</strong> ', '');
+  if (selected === -1) {
+    exp.innerHTML = `<strong>Время вышло!</strong> Правильный ответ выделен зелёным. ${cleanExp}`;
+  } else if (selected === q.correct) {
+    exp.innerHTML = q.explanation;
+  } else {
+    exp.innerHTML = `<strong>Неверно.</strong> ${cleanExp}`;
+  }
+  exp.classList.add('show');
+  const nb=document.getElementById('next-btn');
+  nb.textContent=current<questions.length-1?'Следующий вопрос →':'Посмотреть результаты →';
+  nb.classList.add('show');
+}
+
+function nextQuestion(){current++;if(current<questions.length)renderQuestion();else showResults();}
+
+function showResults(){
+  clearInterval(timer);show('screen-results');
+  document.getElementById('score-num').textContent=`${score}/${questions.length}`;
+  const pct=score/questions.length;
+  const ok=pct>=0.6;
+  const configs=[
+    {min:1,title:'Отлично! Идеальный результат',sub:'Ты полностью усвоил материал первого занятия. Готов к занятию 2!'},
+    {min:0.6,title:'Хороший результат!',sub:'Основы усвоены. Перечитай объяснения к вопросам, где ошибся.'},
+    {min:0,title:'Стоит повторить материал',sub:'Рекомендуем вернуться к слайдам занятия 1 и пройти квиз снова.'}
+  ];
+  const cfg=configs.find(c=>pct>=c.min);
+  document.getElementById('result-title').textContent=cfg.title;
+  document.getElementById('result-sub').textContent=cfg.sub;
+  const circle=document.getElementById('score-circle');
+  circle.style.borderColor=ok?'var(--border-success)':'var(--border-danger)';
+  document.getElementById('score-num').style.color=ok?'var(--text-success)':'var(--text-danger)';
+  document.getElementById('answers-review').innerHTML=answers.map(a=>{
+    const q=questions[a.qIdx];
+    const sel=a.selected>=0?q.opts[a.selected]:'Время вышло';
+    return `<div class="rev-item">
+      <i class="ti ${a.correct?'ti-circle-check':'ti-circle-x'} rev-icon ${a.correct?'ok':'no'}"></i>
+      <div><div class="rev-q">${q.q}</div>
+      <div class="rev-a">${a.correct?q.opts[q.correct]:`Ваш ответ: ${sel} · Правильно: ${q.opts[q.correct]}`}</div></div>
+    </div>`;
+  }).join('');
+}
+
+function restartQuiz(){startQuiz();}
+
+function shareResult(){
+  const text=`Квиз по занятию 1 «IT Project Management» (Академия Мегафон)\nМой результат: ${score}/${questions.length} правильных ответов`;
+  navigator.clipboard?navigator.clipboard.writeText(text).then(()=>alert('Результат скопирован! Отправь его ментору.')):alert(text);
+}
+</script>
+</body>
+</html>
